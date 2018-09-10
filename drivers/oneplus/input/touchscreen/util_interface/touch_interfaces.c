@@ -29,7 +29,7 @@ static struct touch_dma_buf *dma_buffer;
  */
 int touch_i2c_continue_read(struct i2c_client* client, unsigned short length, unsigned char *data)
 {
-    int retval;
+    int retval = 0;
     unsigned char retry;
     struct i2c_msg msg;
 
@@ -63,7 +63,7 @@ int touch_i2c_continue_read(struct i2c_client* client, unsigned short length, un
  */
 int touch_i2c_read_block(struct i2c_client* client, u16 addr, unsigned short length, unsigned char *data)
 {
-	int retval;
+	int retval = 0;
 	unsigned char retry;
 	struct i2c_msg msg[2];
 
@@ -101,7 +101,7 @@ int touch_i2c_read_block(struct i2c_client* client, u16 addr, unsigned short len
  */
 int touch_i2c_continue_write(struct i2c_client* client, unsigned short length, unsigned char *data)
 {
-    int retval;
+    int retval = 0;
     unsigned char retry;
     struct i2c_msg msg;
 
@@ -134,7 +134,7 @@ int touch_i2c_continue_write(struct i2c_client* client, unsigned short length, u
  */
 int touch_i2c_write_block(struct i2c_client* client, u16 addr, unsigned short length, unsigned char const *data)
 {
-    int retval;
+    int retval = 0;
     unsigned char retry;
     unsigned char buffer[4];
     struct i2c_msg msg[1];
