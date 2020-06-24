@@ -1512,6 +1512,8 @@ static int select_fallback_rq(int cpu, struct task_struct *p, bool allow_iso)
 	int dest_cpu;
 	int isolated_candidate = -1;
 	bool is_rtg;
+	int backup_cpu = -1;
+	unsigned int max_nr = UINT_MAX;
 
 	is_rtg = task_in_related_thread_group(p);
 	if (sysctl_sched_skip_affinity && is_rtg &&
@@ -1532,10 +1534,17 @@ static int select_fallback_rq(int cpu, struct task_struct *p, bool allow_iso)
 			if (cpu_isolated(dest_cpu))
 				continue;
 			if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed)) {
-				cpu_dist_inc(p, dest_cpu);
-				return dest_cpu;
+				if (cpu_rq(dest_cpu)->nr_running < 32)
+					return dest_cpu;
+				if (cpu_rq(dest_cpu)->nr_running > max_nr)
+					continue;
+				backup_cpu = dest_cpu;
+				max_nr = cpu_rq(dest_cpu)->nr_running;
 			}
 		}
+
+		if (backup_cpu != -1)
+			return backup_cpu;
 	}
 
 	for (;;) {
