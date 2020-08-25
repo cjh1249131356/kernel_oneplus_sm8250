@@ -4891,6 +4891,28 @@ static int _sde_crtc_check_secure_state(struct drm_crtc *crtc,
 	return 0;
 }
 
+struct task_struct *fp_task;
+
+static void change_fp_nice()
+{
+	struct task_struct *p;
+
+	if (fp_task) {
+		set_user_nice(fp_task, MIN_NICE);
+		return;
+	}
+
+	for_each_process(p) {
+		if (!memcmp(p->comm, "fingerprint", 11)) {
+			set_user_nice(p, MIN_NICE);
+			fp_task = p;
+			return;
+		}
+	}
+	
+	pr_err("Unable to find fingerprint service\n");
+}
+
 int op_dimlayer_bl_alpha = 260;
 int op_dimlayer_bl_enabled = 0;
 int op_dimlayer_bl_enable_real = 0;
@@ -4956,6 +4978,9 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 		display->panel->dim_status = true;
 	else
 		display->panel->dim_status = false;
+
+	if (dim_mode > 0)
+		change_fp_nice();
 
 	if(aod_index <0){
 		oneplus_aod_hid = 0;
