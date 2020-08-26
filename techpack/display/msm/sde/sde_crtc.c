@@ -4922,6 +4922,7 @@ bool finger_type = false;
 extern int op_dimlayer_bl_enable;
 extern int op_dp_enable;
 extern int sde_plane_check_fingerprint_layer(const struct drm_plane_state *drm_state);
+extern bool is_screen_on;
 static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 		struct plane_state *pstates, int cnt)
 {
@@ -4982,6 +4983,13 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 	if (dim_mode > 0)
 		change_fp_nice();
 
+	if (!is_screen_on) {
+		if (mode < 0 || mode > 3)
+			cpu_down(4);
+		else
+			cpu_up(4);
+	}
+	
 	if(aod_index <0){
 		oneplus_aod_hid = 0;
 		aod_layer_hide = 0;
