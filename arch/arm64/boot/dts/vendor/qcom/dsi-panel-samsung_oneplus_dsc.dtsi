@@ -1991,8 +1991,10 @@
 				qcom,display-topology = <1 1 1>,<2 2 1>;
 				qcom,default-topology-index = <1>;
 				qcom,mdss-mdp-transfer-time-us = <8000>; //for 90fps
+				qcom,mdss-dsi-timing-default;
 				qcom,mdss-dsi-panel-framerate = <90>;
 				qcom,mdss-dsi-panel-clockrate = <1042000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 23 09 09 26 24 09 09 06 03 04 00 1D 19];
 				qcom,mdss-dsi-panel-width = <1440>;
 				qcom,mdss-dsi-panel-height = <3120>;
 				qcom,mdss-dsi-h-front-porch = <16>;
@@ -2062,7 +2064,6 @@
 				//29 01 00 00 00 00 03 9F 5A 5A
 				29 01 00 00 00 00 03 F0 A5 A5
 				];
-				qcom,mdss-dsi-panel-phy-timings = [00 23 09 09 26 24 09 09 06 03 04 00 1D 19];
 				qcom,mdss-dsi-t-clk-pre = <0x1D>;
 				qcom,mdss-dsi-t-clk-post = <0x19>;
 				qcom,mdss-dsi-on-command = [
@@ -2665,6 +2666,8 @@
 			qcom,default-topology-index = <1>;
 			qcom,panel-roi-alignment=<720 65 720 65 720 65>;
 		};
+		/delete-node/ timing@1;
+		/delete-node/ timing@2;
 	};
 };
 
