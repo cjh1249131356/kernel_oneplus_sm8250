@@ -26,6 +26,8 @@
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_flip_work.h>
 #include <linux/clk/qcom.h>
+#include <linux/cpu_input_boost.h>
+#include <linux/devfreq_boost.h>
 
 #include "sde_kms.h"
 #include "sde_hw_lm.h"
@@ -4986,8 +4988,12 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 	if (!is_screen_on) {
 		if (mode < 0 || mode > 3)
 			cpu_down(4);
-		else
+		else {
 			cpu_up(4);
+			cpu_input_boost_kick_max(500);
+			devfreq_boost_kick_max(DEVFREQ_MSM_LLCCBW_DDR, 500);
+			devfreq_boost_kick_max(DEVFREQ_MSM_CPU_LLCCBW, 500);
+		}
 	}
 	
 	if(aod_index <0){
