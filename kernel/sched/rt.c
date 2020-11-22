@@ -1829,12 +1829,11 @@ retry:
 			if (sched_cpu_high_irqload(cpu))
 				continue;
 
-			util = cpu_util(cpu);
-
-			if (__cpu_overutilized(cpu, util + tutil))
+			if (__cpu_overutilized(cpu, tutil))
 				continue;
 
-			// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
+			util = cpu_util(cpu);
+
 			if (best_cpu_is_claimed) {
 				best_cpu_idle_idx = cpu_idle_idx;
 				best_cpu_util_cum = util_cum;
