@@ -2060,7 +2060,7 @@ static int exfat_setattr(struct dentry *dentry, struct iattr *attr)
 		&& (attr->ia_size > i_size_read(inode))) {
 		error = exfat_cont_expand(inode, attr->ia_size);
 		if (error || attr->ia_valid == ATTR_SIZE)
-			goto out;
+			return error;
 		attr->ia_valid &= ~ATTR_SIZE;
 	}
 
@@ -2073,11 +2073,8 @@ static int exfat_setattr(struct dentry *dentry, struct iattr *attr)
 
 	error = setattr_prepare(dentry, attr);
 	attr->ia_valid = ia_valid;
-	if (error) {
-		if (sbi->options.quiet)
-			error = 0;
-		goto out;
-	}
+	if (error)
+		return error;
 
 	if (((attr->ia_valid & ATTR_UID) &&
 		 (!uid_eq(attr->ia_uid, sbi->options.fs_uid))) ||
@@ -2085,13 +2082,7 @@ static int exfat_setattr(struct dentry *dentry, struct iattr *attr)
 		 (!gid_eq(attr->ia_gid, sbi->options.fs_gid))) ||
 		((attr->ia_valid & ATTR_MODE) &&
 		 (attr->ia_mode & ~(S_IFREG | S_IFLNK | S_IFDIR | S_IRWXUGO)))) {
-		error = -EPERM;
-	}
-
-	if (error) {
-		if (sbi->options.quiet)
-			error = 0;
-		goto out;
+		return -EPERM;
 	}
 
 	/*
@@ -2117,7 +2108,6 @@ static int exfat_setattr(struct dentry *dentry, struct iattr *attr)
 	setattr_copy(inode, attr);
 	mark_inode_dirty(inode);
 
-out:
 	return error;
 }
 
@@ -3209,8 +3199,6 @@ static int __exfat_show_options(struct seq_file *m, struct super_block *sb)
 		seq_printf(m, ",codepage=%s", sbi->nls_disk->charset);
 	if (sbi->nls_io)
 		seq_printf(m, ",iocharset=%s", sbi->nls_io->charset);
-	if (opts->quiet)
-		seq_puts(m, ",quiet");
 	if (opts->utf8)
 		seq_puts(m, ",utf8");
 	seq_printf(m, ",namecase=%u", opts->casesensitive);
@@ -3377,7 +3365,6 @@ enum {
 	Opt_allow_utime,
 	Opt_codepage,
 	Opt_charset,
-	Opt_quiet,
 	Opt_utf8,
 	Opt_namecase,
 	Opt_tz_utc,
@@ -3400,7 +3387,6 @@ static const match_table_t exfat_tokens = {
 	{Opt_allow_utime, "allow_utime=%o"},
 	{Opt_codepage, "codepage=%u"},
 	{Opt_charset, "iocharset=%s"},
-	{Opt_quiet, "quiet"},
 	{Opt_utf8, "utf8"},
 	{Opt_namecase, "namecase=%u"},
 	{Opt_tz_utc, "tz=UTC"},
@@ -3428,7 +3414,6 @@ static int parse_options(struct super_block *sb, char *options, int silent,
 	opts->allow_utime = U16_MAX;
 	opts->codepage = exfat_default_codepage;
 	opts->iocharset = exfat_default_iocharset;
-	opts->quiet = 0;
 	opts->casesensitive = 0;
 	opts->utf8 = 0;
 	opts->tz_utc = 0;
@@ -3484,9 +3469,6 @@ static int parse_options(struct super_block *sb, char *options, int silent,
 			if (!tmpstr)
 				return -ENOMEM;
 			opts->iocharset = tmpstr;
-			break;
-		case Opt_quiet:
-			opts->quiet = 1;
 			break;
 		case Opt_namecase:
 			if (match_int(&args[0], &option))
