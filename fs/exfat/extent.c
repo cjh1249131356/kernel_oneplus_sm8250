@@ -1,8 +1,18 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  *  Copyright (C) 2012-2013 Samsung Electronics Co., Ltd.
  *
- *  extent.c: Improve the performance of traversing fat chain
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
@@ -14,6 +24,18 @@
  *	of inode number.
  *  May 1999. AV. Fixed the bogosity with FAT32 (read "FAT28"). Fscking lusers.
  */
+
+/************************************************************************/
+/*                                                                      */
+/*  PROJECT : exFAT & FAT12/16/32 File System                           */
+/*  FILE    : extent.c                                                  */
+/*  PURPOSE : Improve the performance of traversing fat chain.          */
+/*                                                                      */
+/*----------------------------------------------------------------------*/
+/*  NOTES                                                               */
+/*                                                                      */
+/*                                                                      */
+/************************************************************************/
 
 #include <linux/slab.h>
 #include "exfat.h"
@@ -46,7 +68,7 @@ static void init_once(void *c)
 	INIT_LIST_HEAD(&cache->cache_list);
 }
 
-s32 exfat_extent_cache_init(void)
+s32 extent_cache_init(void)
 {
 	extent_cache_cachep = kmem_cache_create("exfat_extent_cache",
 				sizeof(struct extent_cache),
@@ -57,14 +79,14 @@ s32 exfat_extent_cache_init(void)
 	return 0;
 }
 
-void exfat_extent_cache_shutdown(void)
+void extent_cache_shutdown(void)
 {
 	if (!extent_cache_cachep)
 		return;
 	kmem_cache_destroy(extent_cache_cachep);
 }
 
-void exfat_extent_cache_init_inode(struct inode *inode)
+void extent_cache_init_inode(struct inode *inode)
 {
 	EXTENT_T *extent = &(EXFAT_I(inode)->fid.extent);
 
@@ -206,7 +228,7 @@ out:
  * Cache invalidation occurs rarely, thus the LRU chain is not updated. It
  * fixes itself after a while.
  */
-static void __exfat_extent_cache_inval_inode(struct inode *inode)
+static void __extent_cache_inval_inode(struct inode *inode)
 {
 	EXTENT_T *extent = &(EXFAT_I(inode)->fid.extent);
 	struct extent_cache *cache;
@@ -224,12 +246,12 @@ static void __exfat_extent_cache_inval_inode(struct inode *inode)
 		extent->cache_valid_id++;
 }
 
-void exfat_extent_cache_inval_inode(struct inode *inode)
+void extent_cache_inval_inode(struct inode *inode)
 {
 	EXTENT_T *extent = &(EXFAT_I(inode)->fid.extent);
 
 	spin_lock(&extent->cache_lru_lock);
-	__exfat_extent_cache_inval_inode(inode);
+	__extent_cache_inval_inode(inode);
 	spin_unlock(&extent->cache_lru_lock);
 }
 
@@ -247,7 +269,7 @@ static inline void cache_init(struct extent_cache_id *cid, u32 fclus, u32 dclus)
 	cid->nr_contig = 0;
 }
 
-s32 exfat_extent_get_clus(struct inode *inode, u32 cluster, u32 *fclus,
+s32 extent_get_clus(struct inode *inode, u32 cluster, u32 *fclus,
 		u32 *dclus, u32 *last_dclus, s32 allow_eof)
 {
 	struct super_block *sb = inode->i_sb;
@@ -301,7 +323,7 @@ s32 exfat_extent_get_clus(struct inode *inode, u32 cluster, u32 *fclus,
 			return -EIO;
 		}
 
-		if (exfat_ent_get_safe(sb, *dclus, &content))
+		if (fat_ent_get_safe(sb, *dclus, &content))
 			return -EIO;
 
 		*last_dclus = *dclus;

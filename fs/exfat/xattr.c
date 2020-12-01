@@ -1,11 +1,31 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  *  Copyright (C) 2012-2013 Samsung Electronics Co., Ltd.
  *
- *  xattr.c: exFAT code for supporting xattr(Extended File Attributes)
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
+/************************************************************************/
+/*                                                                      */
+/*  PROJECT : exFAT & FAT12/16/32 File System                           */
+/*  FILE    : xattr.c                                                   */
+/*  PURPOSE : exFAT code for supporting xattr(Extended File Attributes) */
+/*                                                                      */
+/*----------------------------------------------------------------------*/
+/*  NOTES                                                               */
+/*                                                                      */
+/*                                                                      */
+/************************************************************************/
 
 #ifdef CONFIG_EXFAT_VIRTUAL_XATTR
 
@@ -33,6 +53,10 @@ ssize_t exfat_listxattr(struct dentry *dentry, char *list, size_t size)
 	return 0;
 }
 
+
+/*************************************************************************
+ * INNER FUNCTIONS WHICH HAS KERNEL VERSION DEPENDENCY
+ *************************************************************************/
 static int __exfat_xattr_check_support(const char *name)
 {
 	if (can_support(name))
@@ -52,6 +76,10 @@ ssize_t __exfat_getxattr(const char *name, void *value, size_t size)
 	return strlen(default_xattr);
 }
 
+
+/*************************************************************************
+ * FUNCTIONS WHICH HAS KERNEL VERSION DEPENDENCY
+ *************************************************************************/
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
 static int exfat_xattr_get(const struct xattr_handler *handler,
 		struct dentry *dentry, struct inode *inode,
